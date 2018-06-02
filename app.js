@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    $('#sidebarCollapse').on('click', function () {
+    $('#sidebarCollapse').on('hover', function () {
         $('#sidebar').toggleClass('active');
     });
 });
@@ -82,7 +82,7 @@ let areas = [
                 areaIndex: 0
             },
             {
-                title: 'Celebration, Mercure Lavassa',
+                title: 'Celebration, Mercure, Lavassa',
                 location: {lat: 18.410252, lng: 73.509065},
                 areaIndex: 0
             },
@@ -167,8 +167,8 @@ function initPlaces() {
             let places = area.places;
             let marker = new google.maps.Marker({
                 position: places[i].location,
-                title: places[i].title
-
+                title: places[i].title,
+                animation: google.maps.Animation.DROP
             });
             markers.push(marker);
             marker.addListener('click', function () {
@@ -183,6 +183,32 @@ function initPlaces() {
         map.fitBounds(bounds);
     }
 
+
+}
+
+function toggleBounce(marker) {
+    // if (marker.getAnimation() !== null) {
+    //     marker.setAnimation(null);
+    // } else {
+    marker.setAnimation(google.maps.Animation.BOUNCE);
+    // }
+}
+
+function dropAnimate(marker) {
+    // if (marker.getAnimation() !== null) {
+    //     marker.setAnimation(null);
+    // } else {
+    marker.setAnimation(google.maps.Animation.DROP);
+    // }
+}
+
+function getMarkerByTitle(placeName) {
+    for (let i = 0; i < markers.length; i++) {
+        let marker = markers[i];
+        if (marker.title == placeName) {
+            return marker;
+        }
+    }
 }
 
 function populateInfoWindow(marker, infowindow) {
@@ -196,11 +222,118 @@ function populateInfoWindow(marker, infowindow) {
     }
 }
 
+function getFilteredMarkers(places) {
+    let filteredMarkers = [];
+
+    for (let i = 0; i < places.length; i++) {
+        let place = places[i];
+
+        for (var j = 0; j < markers.length; j++) {
+            let marker = markers[j];
+
+            if (marker.title == place.title) {
+                filteredMarkers.push(marker);
+            }
+        }
+    }
+
+    return filteredMarkers;
+}
+
+function clearMarkersOnMap() {
+    for (let i = 0; i < markers.length; i++) {
+        let marker = markers[i];
+        marker.setMap(null);
+    }
+}
+
+function showArea(area, bounceType) {
+
+    let bounds = new google.maps.LatLngBounds();
+
+    // alert(area.places.length);
+    // for (let i = 0; i < area.places.length; i++) {
+    //     let place = area.places[i];
+    //     alert(place.title);
+    // }
+
+    clearMarkersOnMap();
+
+    let filteredMarkers = getFilteredMarkers(area.places);
+
+    for (let i = 0; i < filteredMarkers.length; i++) {
+        let marker = filteredMarkers[i];
+        marker.setMap(map);
+        bounds.extend(marker.position);
+        map.fitBounds(bounds);
+        if (bounceType == 'bounce') toggleBounce(marker);
+        else if (bounceType == 'drop') dropAnimate(marker);
+    }
+}
+
+function showPlace(place, bounceType) {
+
+    let bounds = new google.maps.LatLngBounds();
+
+    // alert(area.places.length);
+    // for (let i = 0; i < area.places.length; i++) {
+    //     let place = area.places[i];
+    //     alert(place.title);
+    // }
+
+    clearMarkersOnMap();
+
+    let currentMarker = getMarkerByTitle(place.title);
+
+    currentMarker.setMap(map);
+
+    bounds.extend(currentMarker.position);
+    map.fitBounds(bounds);
+    map.setZoom(13);
+
+    if (bounceType == 'bounce') {
+        toggleBounce(marker);
+    }
+
+    else if (bounceType == 'drop') {
+        dropAnimate(marker);
+        populateInfoWindow(marker, infowindow);
+    }
+}
+
+function showAll() {
+    let bounds = new google.maps.LatLngBounds();
+
+    for (let i = 0; i < markers.length; i++) {
+        let marker = markers[i];
+        marker.setMap(map);
+        bounds.extend(marker.position);
+        dropAnimate(marker);
+    }
+
+    map.fitBounds(bounds);
+}
+
 var AppViewModel = function() {
     let self = this;
 
-    self.areas = areas; 
+    self.areas = areas;
 
+    self.previewAreaOnly = function() {
+        showArea(this, 'bounce');
+    }
+
+    self.showAreaOnly = function() {
+        showArea(this, 'drop');
+    }
+
+    self.previewPlaceOnly = function() {
+        showPlace(this, 'bounce');
+    }
+
+    self.showPlaceOnly = function() {
+        showPlace(this, 'drop');
+    }
 }
 
 ko.applyBindings(new AppViewModel());
