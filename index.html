@@ -24,8 +24,8 @@
 
             <ul class="list-unstyled components" data-bind="foreach: areas">
                 <li>
-                    <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false" data-bind="text: areaName"></a>
-                    <ul class="collapse list-unstyled" id="homeSubmenu" data-bind="foreach: places">
+                    <a data-toggle="collapse" aria-expanded="false" data-bind="text: areaName, attr: {href: '#' + areaName}"></a>
+                    <ul class="collapse list-unstyled" data-bind="foreach: places, attr: {id: areaName}">
                         <li><a href="#" data-bind="text: title"></a></li>
                     </ul>
                 </li>

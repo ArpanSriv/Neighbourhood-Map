@@ -199,7 +199,7 @@ function populateInfoWindow(marker, infowindow) {
 var AppViewModel = function() {
     let self = this;
 
-    self.areas = areas;
+    self.areas = areas; 
 
 }
 
