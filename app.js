@@ -108,6 +108,8 @@ function initMap() {
     detailInfoWindow = new google.maps.InfoWindow();
     initPlaces();
 
+    let bounds = new google.maps.LatLngBounds();
+
     function initPlaces() {
 
         let bounds = new google.maps.LatLngBounds();
@@ -200,8 +202,6 @@ function initMap() {
 
     function showArea(area, bounceType) {
 
-        let bounds = new google.maps.LatLngBounds();
-
         clearMarkersOnMap();
 
         let filteredMarkers = getFilteredMarkers(area.places);
@@ -249,7 +249,6 @@ function initMap() {
     }
 
     function showAll() {
-        let bounds = new google.maps.LatLngBounds();
 
         for (let i = 0; i < markers.length; i++) {
             let marker = markers[i];
@@ -309,7 +308,7 @@ function initMap() {
 
         self.showAreaOnly = ko.computed(function() {
             // self.displayAreas([]);
-            self.displayAreas().push(area);
+            // self.displayAreas().push(area);
 
             // showArea(this, 'drop');
 
@@ -317,10 +316,12 @@ function initMap() {
 
             clearMarkersOnMap();
 
+            let filteredMarkers = [];
+
             for (let j = 0; j < self.displayAreas().length; j++) {
                 let area = self.displayAreas()[j]
 
-                let filteredMarkers = getFilteredMarkers(area.places);
+                filteredMarkers.push(...getFilteredMarkers(area.places));
             }
 
             displayMarkers(filteredMarkers, 'drop');
@@ -335,9 +336,15 @@ function initMap() {
             showPlace(this, 'drop');
         }
 
+        self.showAll = function() {
+            self.displayAreas(areas);
+            self.showAreaOnly();
+        }
+
         self.displayInfoWindow = function() {
 
         }
+
     }
 
     ko.applyBindings(new AppViewModel());
