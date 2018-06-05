@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    $('#sidebarCollapse').on('hover', function () {
+    $('#sidebarCollapse').on('click', function () {
         $('#sidebar').toggleClass('active');
     });
 });
@@ -107,6 +107,7 @@ function initMap() {
     });
 
     detailInfoWindow = new google.maps.InfoWindow();
+
     initPlaces();
 
     let bounds = new google.maps.LatLngBounds();
@@ -125,9 +126,6 @@ function initMap() {
                     animation: google.maps.Animation.DROP
                 });
                 markers.push(marker);
-                marker.addListener('click', function () {
-                    populateInfoWindow(marker, detailInfoWindow)
-                });
             }
         }
 
@@ -165,10 +163,12 @@ function initMap() {
         }
     }
 
-    function populateInfoWindow(marker, infowindow) {
+    function populateInfoWindow(marker, content) {
+        let infowindow = detailInfoWindow;
+
         if (infowindow.marker != marker) {
             infowindow.marker = marker;
-            infowindow.setContent('<div>' + marker.title + '</div>');
+            infowindow.setContent('<div>' + content + '</div>');
             infowindow.open(map, marker);
             infowindow.addListener('closeclick', function () {
                 infowindow.setMarker = null;
@@ -199,11 +199,6 @@ function initMap() {
             let marker = markersArray[i];
             marker.setMap(null);
         }
-
-        for (let i = 0; i < markers.length; i++) {
-            let marker = markers[i];
-            marker.setMap(null);
-        }
     }
 
     function showArea(area, bounceType) {
@@ -224,46 +219,6 @@ function initMap() {
 
     function getZomatoContent(marker) {
         //// TODO: Fetch data from Zomato API
-        return "Data returned  by zomato comes here."
-    }
-
-    function showPlace(place, bounceType) {
-
-        let bounds = new google.maps.LatLngBounds();
-
-        clearMarkersOnMap();
-
-        let currentMarker = getMarkerByTitle(place.title);
-
-        currentMarker.setMap(map);
-
-        bounds.extend(currentMarker.position);
-        map.fitBounds(bounds);
-        map.setZoom(13);
-
-        if (bounceType == 'bounce') {
-            toggleBounce(currentMarker);
-        }
-
-        else if (bounceType == 'drop') {
-            dropAnimate(currentMarker);
-
-            getZomatoContent(currentMarker);
-
-            populateInfoWindow(currentMarker, detailInfoWindow);
-        }
-    }
-
-    function showAll() {
-
-        for (let i = 0; i < markers.length; i++) {
-            let marker = markers[i];
-            marker.setMap(map);
-            bounds.extend(marker.position);
-            dropAnimate(marker);
-        }
-
-        map.fitBounds(bounds);
     }
 
     function getAreaIndexByName(areaName) {
@@ -278,22 +233,37 @@ function initMap() {
         return -1;
     }
 
-    function displayMarkers(filteredMarkers, animationType) {
+    function getMarkersByArea(areaName) {
+        let areaMarkers = [];
 
-        let bounds = new google.maps.LatLngBounds();
-
-        for (let i = 0; i < filteredMarkers.length; i++) {
-            let marker = filteredMarkers[i];
-            marker.setMap(map);
-            bounds.extend(marker.position);
-            map.fitBounds(bounds);
-            if (animationType == 'bounce') toggleBounce(marker);
-            else if (animationType == 'drop') dropAnimate(marker);
+        for (let i = 0; i < areas.length; i++) {
+            let area = areas[i]
+            if (area.areaName == areaName) {
+                for (let j = 0; j < area.places.length; j++) {
+                    areaMarkers.push(getMarkerByTitle(area.places[j].title));
+                }
+            }
         }
+
+        return areaMarkers;
     }
 
     var AppViewModel = function() {
         let self = this;
+
+        function displayMarkers(animationType) {
+
+            let bounds = new google.maps.LatLngBounds();
+
+            for (let i = 0; i < self.currentMarkerArray().length; i++) {
+                let marker = self.currentMarkerArray()[i];
+                marker.setMap(map);
+                bounds.extend(marker.position);
+                map.fitBounds(bounds);
+                if (animationType == 'bounce') toggleBounce(marker);
+                else if (animationType == 'drop') dropAnimate(marker);
+            }
+        }
 
         self.displayAreas = ko.observableArray(areas);
 
@@ -303,32 +273,38 @@ function initMap() {
 
         self.currentMarkerArray = ko.observableArray(markers);
 
-        //Index of current marker (if any) in currentMarkerArray observable.
-        self.currentMarkerIndex = ko.observable();
-
-        self.currentPlaceData = ko.computed(function() {
-            let data = getZomatoContent(self.currentMarkerArray()[self.currentMarkerIndex()]);
-            return data;
-        })
+        self.currentPlaceData = function() {
+            $.ajax({
+                url: "https://developers.zomato.com/api/v2.1/restaurant",
+                data: {
+                    res_id : 13054
+                },
+                type: "GET",
+                headers: {
+                    'Accept' : 'application/json',
+                    'user-key' : '9a501ae2899cab58f5d70ed7afe99f3a'
+                },
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function(json) {
+                    return json.name;
+                },
+                failure: function(json) {
+                    return json.status;
+                }
+            })
+        }
 
         self.previewAreaOnly = function() {
             console.log(this.areaName);
 
             clearMarkersOnMap(self.currentMarkerArray());
 
-            let filteredMarkers = [];
+            let areaMarkers = getMarkersByArea(this.areaName)
 
-            for (let j = 0; j < self.displayAreas().length; j++) {
-                let area = self.displayAreas()[j]
+            self.currentMarkerArray(areaMarkers)
 
-                if (area.areaName == this.areaName) {
-                    filteredMarkers.push(...getFilteredMarkers(area.places));
-                }
-            }
-
-            self.currentMarkerArray(filteredMarkers)
-
-            displayMarkers(self.currentMarkerArray(), 'bounce');
+            displayMarkers('bounce');
         }
 
         self.showAreaOnly = function() {
@@ -348,53 +324,64 @@ function initMap() {
 
             self.currentMarkerArray(filteredMarkers)
 
-            displayMarkers(self.currentMarkerArray(), 'drop');
+            displayMarkers('drop');
         }
 
         self.previewPlaceOnly = function() {
-            //TODO
-        }
+            console.log(this.title);
 
-        self.showPlaceOnly = function() {
-            console.log(this.areaName);
+            self.currentArea(this);
 
             clearMarkersOnMap(self.currentMarkerArray());
 
-            resetMarkers()
+            self.currentMarkerArray([getMarkerByTitle(this.title)])
 
-            displayMarkers(self.currentMarkerArray(), 'bounce');
+            displayMarkers('bounce');
+
+            self.displayInfoWindow(true);
+
+            map.setZoom(13);
+        }
+
+        self.showPlaceOnly = function() {
+            console.log(this.title);
+
+            self.currentArea(this);
+
+            clearMarkersOnMap(self.currentMarkerArray());
+
+            let marker = getMarkerByTitle(this.title);
+            marker.addListener('click', function() {
+                self.displayInfoWindow(false);
+            })
+            self.currentMarkerArray([marker])
+
+            displayMarkers('drop');
+
+            self.displayInfoWindow(false);
+
+            map.setZoom(13);
         }
 
         self.showAll = function() {
-            self.currentMarkerArray([])
 
-            let bounds = new google.maps.LatLngBounds();
+            clearMarkersOnMap(self.currentMarkerArray())
 
-            for (let j = 0; j < areas.length; j++) {
-                let area = areas[j];
-                for (let i = 0; i < area.places.length; i++) {
-                    let places = area.places;
-                    let marker = new google.maps.Marker({
-                        position: places[i].location,
-                        title: places[i].title,
-                        animation: google.maps.Animation.DROP
-                    });
-                    self.currentMarkerArray().push(marker);
-                    marker.addListener('click', function () {
-                        populateInfoWindow(marker, detailInfoWindow)
-                    });
-                }
-            }
+            self.currentMarkerArray(markers)
 
-            for (let i = 0; i < self.currentMarkerArray().length; i++) {
-                self.currentMarkerArray()[i].setMap(map);
-                bounds.extend(self.currentMarkerArray()[i].position);
-                map.fitBounds(bounds);
-            }
+            displayMarkers('drop')
         }
 
-        self.displayInfoWindow = function() {
+        self.displayInfoWindow = function(short) {
+            if (self.currentMarkerArray().length == 1) {
+                let currentMarker = self.currentMarkerArray()[0];
 
+                if (short) {
+                    populateInfoWindow(currentMarker, currentMarker.title + "<br><b>Click on the title to expand</b>")
+                } else {
+                    populateInfoWindow(currentMarker, self.currentPlaceData())
+                }
+            }
         }
 
     }

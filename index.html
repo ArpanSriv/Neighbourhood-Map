@@ -23,11 +23,25 @@
 
             <ul class="list-unstyled components" data-bind="foreach: areas">
                 <li>
-                    <a data-toggle="collapse" aria-expanded="false" data-bind="text: areaName, attr: { href: '#' + areaName }, event: { mouseover: $parent.previewAreaOnly, mouseout: $parent.showAll }, click: $parent.showAreaOnly"></a>
+                    <a
+                    data-toggle="collapse" aria-expanded="false"
+                    data-bind=" text: areaName,
+                                attr: { href: '#' + areaName },
+                                event: { mouseover: $parent.previewAreaOnly },
+                                click: $parent.showAreaOnly"></a>
                     <ul class="collapse list-unstyled" data-bind="foreach: places, attr: {id: areaName}">
-                        <li><a href="#" data-bind="text: title,  event: { mouseover: $root.previewPlaceOnly, mouseout: $root.showAll }, click: $root.showPlaceOnly"></a></li>
+                        <li><a
+                            href="#"
+                            data-bind=" text: title,
+                                        event: { mouseover: $root.previewPlaceOnly },
+                                        click: $root.showPlaceOnly"></a>
+                        </li>
                     </ul>
                 </li>
+            </ul>
+
+            <ul class="list-unstyled">
+                <li><a class="reset" data-bind="click: showAll">Reset</a></li>
             </ul>
 
         </nav>
