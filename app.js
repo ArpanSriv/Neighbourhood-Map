@@ -194,7 +194,12 @@ function initMap() {
         return filteredMarkers;
     }
 
-    function clearMarkersOnMap(markers) {
+    function clearMarkersOnMap(markersArray) {
+        for (let i = 0; i < markersArray.length; i++) {
+            let marker = markersArray[i];
+            marker.setMap(null);
+        }
+
         for (let i = 0; i < markers.length; i++) {
             let marker = markers[i];
             marker.setMap(null);
@@ -274,6 +279,9 @@ function initMap() {
     }
 
     function displayMarkers(filteredMarkers, animationType) {
+
+        let bounds = new google.maps.LatLngBounds();
+
         for (let i = 0; i < filteredMarkers.length; i++) {
             let marker = filteredMarkers[i];
             marker.setMap(map);
@@ -303,17 +311,8 @@ function initMap() {
             return data;
         })
 
-        // self.previewAreaOnly = function() {
-        //     showArea(this, 'bounce');
-        // }
-
-        self.showAreaOnly = function() {
-            // self.displayAreas([]);
-            // self.displayAreas().push(area);
-
-            // showArea(this, 'drop');
-
-            let bounds = new google.maps.LatLngBounds();
+        self.previewAreaOnly = function() {
+            console.log(this.areaName);
 
             clearMarkersOnMap(self.currentMarkerArray());
 
@@ -322,25 +321,76 @@ function initMap() {
             for (let j = 0; j < self.displayAreas().length; j++) {
                 let area = self.displayAreas()[j]
 
-                filteredMarkers.push(...getFilteredMarkers(area.places));
+                if (area.areaName == this.areaName) {
+                    filteredMarkers.push(...getFilteredMarkers(area.places));
+                }
             }
 
             self.currentMarkerArray(filteredMarkers)
-            displayMarkers(self.currentMarkerArray(), 'drop');
 
+            displayMarkers(self.currentMarkerArray(), 'bounce');
+        }
+
+        self.showAreaOnly = function() {
+            console.log(this.areaName);
+
+            clearMarkersOnMap(self.currentMarkerArray());
+
+            let filteredMarkers = [];
+
+            for (let j = 0; j < self.displayAreas().length; j++) {
+                let area = self.displayAreas()[j]
+
+                if (area.areaName == this.areaName) {
+                    filteredMarkers.push(...getFilteredMarkers(area.places));
+                }
+            }
+
+            self.currentMarkerArray(filteredMarkers)
+
+            displayMarkers(self.currentMarkerArray(), 'drop');
         }
 
         self.previewPlaceOnly = function() {
-            // showPlace(this, 'bounce');
+            //TODO
         }
 
         self.showPlaceOnly = function() {
-            showPlace(this, 'drop');
+            console.log(this.areaName);
+
+            clearMarkersOnMap(self.currentMarkerArray());
+
+            resetMarkers()
+
+            displayMarkers(self.currentMarkerArray(), 'bounce');
         }
 
         self.showAll = function() {
-            self.displayAreas(areas);
-            self.showAreaOnly();
+            self.currentMarkerArray([])
+
+            let bounds = new google.maps.LatLngBounds();
+
+            for (let j = 0; j < areas.length; j++) {
+                let area = areas[j];
+                for (let i = 0; i < area.places.length; i++) {
+                    let places = area.places;
+                    let marker = new google.maps.Marker({
+                        position: places[i].location,
+                        title: places[i].title,
+                        animation: google.maps.Animation.DROP
+                    });
+                    self.currentMarkerArray().push(marker);
+                    marker.addListener('click', function () {
+                        populateInfoWindow(marker, detailInfoWindow)
+                    });
+                }
+            }
+
+            for (let i = 0; i < self.currentMarkerArray().length; i++) {
+                self.currentMarkerArray()[i].setMap(map);
+                bounds.extend(self.currentMarkerArray()[i].position);
+                map.fitBounds(bounds);
+            }
         }
 
         self.displayInfoWindow = function() {
