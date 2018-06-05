@@ -105,6 +105,7 @@ function initMap() {
             position: google.maps.ControlPosition.BOTTOM_RIGHT
         }
     });
+
     detailInfoWindow = new google.maps.InfoWindow();
     initPlaces();
 
@@ -193,7 +194,7 @@ function initMap() {
         return filteredMarkers;
     }
 
-    function clearMarkersOnMap() {
+    function clearMarkersOnMap(markers) {
         for (let i = 0; i < markers.length; i++) {
             let marker = markers[i];
             marker.setMap(null);
@@ -292,9 +293,9 @@ function initMap() {
 
         self.currentPlace = ko.observable();
 
-        self.currentMarkerArray = ko.observableArray();
+        self.currentMarkerArray = ko.observableArray(markers);
 
-        //Index of current marker in currentMarkerArray observable.
+        //Index of current marker (if any) in currentMarkerArray observable.
         self.currentMarkerIndex = ko.observable();
 
         self.currentPlaceData = ko.computed(function() {
@@ -306,7 +307,7 @@ function initMap() {
         //     showArea(this, 'bounce');
         // }
 
-        self.showAreaOnly = ko.computed(function() {
+        self.showAreaOnly = function() {
             // self.displayAreas([]);
             // self.displayAreas().push(area);
 
@@ -314,7 +315,7 @@ function initMap() {
 
             let bounds = new google.maps.LatLngBounds();
 
-            clearMarkersOnMap();
+            clearMarkersOnMap(self.currentMarkerArray());
 
             let filteredMarkers = [];
 
@@ -324,9 +325,10 @@ function initMap() {
                 filteredMarkers.push(...getFilteredMarkers(area.places));
             }
 
-            displayMarkers(filteredMarkers, 'drop');
+            self.currentMarkerArray(filteredMarkers)
+            displayMarkers(self.currentMarkerArray(), 'drop');
 
-        })
+        }
 
         self.previewPlaceOnly = function() {
             // showPlace(this, 'bounce');
