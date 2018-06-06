@@ -88,32 +88,29 @@ let areas = [
 ]
 
 function initMap() {
-    map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 13,
-        mapTypeControl: true,
-        mapTypeControlOptions: {
-            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-            position: google.maps.ControlPosition.TOP_RIGHT
-        },
-        zoomControl: true,
-        zoomControlOptions: {
-            position: google.maps.ControlPosition.LEFT_CENTER
-        },
-        scaleControl: true,
-        streetViewControl: true,
-        streetViewControlOptions: {
-            position: google.maps.ControlPosition.BOTTOM_RIGHT
-        }
-    });
 
-    detailInfoWindow = new google.maps.InfoWindow();
+    var AppViewModel = function() {
+        let self = this;
 
-    initPlaces();
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 13,
+            mapTypeControl: true,
+            mapTypeControlOptions: {
+                style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                position: google.maps.ControlPosition.TOP_RIGHT
+            },
+            zoomControl: true,
+            zoomControlOptions: {
+                position: google.maps.ControlPosition.TOP_RIGHT
+            },
+            scaleControl: true,
+            streetViewControl: true,
+            streetViewControlOptions: {
+                position: google.maps.ControlPosition.TOP_RIGHT
+            }
+        });
 
-    let bounds = new google.maps.LatLngBounds();
-
-    function initPlaces() {
-
+        detailInfoWindow = new google.maps.InfoWindow();
         let bounds = new google.maps.LatLngBounds();
 
         for (let j = 0; j < areas.length; j++) {
@@ -124,7 +121,7 @@ function initMap() {
                     position: places[i].location,
                     title: places[i].title,
                     animation: google.maps.Animation.DROP
-                });
+                })
                 markers.push(marker);
             }
         }
@@ -133,123 +130,181 @@ function initMap() {
             markers[i].setMap(map);
             bounds.extend(markers[i].position);
             map.fitBounds(bounds);
+
+            
+            markers[i].addListener('mouseover', function() {
+
+                console.log(this.title);
+
+                clearMarkersOnMap(self.currentMarkerArray());
+
+                self.currentMarkerArray([this])
+
+                this.setMap(map);
+
+                map.panTo(this.position)
+
+                let place = getPlaceByMarker(this);
+
+                self.currentPlace(place);
+
+                console.log(place);
+
+                self.displayInfoWindow(false);
+            })
         }
 
-
-    }
-
-    function toggleBounce(marker) {
-        // if (marker.getAnimation() !== null) {
-        //     marker.setAnimation(null);
-        // } else {
-        marker.setAnimation(google.maps.Animation.BOUNCE);
-        // }
-    }
-
-    function dropAnimate(marker) {
-        // if (marker.getAnimation() !== null) {
-        //     marker.setAnimation(null);
-        // } else {
-        marker.setAnimation(google.maps.Animation.DROP);
-        // }
-    }
-
-    function getMarkerByTitle(placeName) {
-        for (let i = 0; i < markers.length; i++) {
-            let marker = markers[i];
-            if (marker.title == placeName) {
-                return marker;
-            }
-        }
-    }
-
-    function populateInfoWindow(marker, content) {
-        let infowindow = detailInfoWindow;
-
-        if (infowindow.marker != marker) {
-            infowindow.marker = marker;
-            infowindow.setContent('<div>' + content + '</div>');
-            infowindow.open(map, marker);
-            infowindow.addListener('closeclick', function () {
-                infowindow.setMarker = null;
-            });
-        }
-    }
-
-    function getFilteredMarkers(places) {
-        let filteredMarkers = [];
-
-        for (let i = 0; i < places.length; i++) {
-            let place = places[i];
-
-            for (var j = 0; j < markers.length; j++) {
-                let marker = markers[j];
-
-                if (marker.title == place.title) {
-                    filteredMarkers.push(marker);
+        function getPlaceByMarker(marker) {
+            for (let j = 0; j < areas.length; j++) {
+                let area = areas[j];
+                for (let i = 0; i < area.places.length; i++) {
+                    let place = area.places[i];
+                    if (place.title == marker.title) {
+                        return place;
+                    }
                 }
             }
         }
 
-        return filteredMarkers;
-    }
-
-    function clearMarkersOnMap(markersArray) {
-        for (let i = 0; i < markersArray.length; i++) {
-            let marker = markersArray[i];
-            marker.setMap(null);
+        function toggleBounce(marker) {
+            marker.setAnimation(google.maps.Animation.BOUNCE);
+            setTimeout(function () {
+                marker.setAnimation(null);
+            }, 1000)
         }
-    }
 
-    function showArea(area, bounceType) {
-
-        clearMarkersOnMap();
-
-        let filteredMarkers = getFilteredMarkers(area.places);
-
-        for (let i = 0; i < filteredMarkers.length; i++) {
-            let marker = filteredMarkers[i];
-            marker.setMap(map);
-            bounds.extend(marker.position);
-            map.fitBounds(bounds);
-            if (bounceType == 'bounce') toggleBounce(marker);
-            else if (bounceType == 'drop') dropAnimate(marker);
+        function dropAnimate(marker) {
+            marker.setAnimation(google.maps.Animation.DROP);
         }
-    }
 
-    function getZomatoContent(marker) {
-        //// TODO: Fetch data from Zomato API
-    }
-
-    function getAreaIndexByName(areaName) {
-        for (let i = 0; i < areas.length; i++) {
-            let area = areas[i];
-
-            if (area.areaName == areaName) {
-                return i;
+        function getMarkerByTitle(placeName) {
+            for (let i = 0; i < markers.length; i++) {
+                let marker = markers[i];
+                if (marker.title == placeName) {
+                    return marker;
+                }
             }
         }
 
-        return -1;
-    }
+        function getFilteredMarkers(places) {
+            let filteredMarkers = [];
 
-    function getMarkersByArea(areaName) {
-        let areaMarkers = [];
+            for (let i = 0; i < places.length; i++) {
+                let place = places[i];
 
-        for (let i = 0; i < areas.length; i++) {
-            let area = areas[i]
-            if (area.areaName == areaName) {
+                for (var j = 0; j < markers.length; j++) {
+                    let marker = markers[j];
+
+                    if (marker.title == place.title) {
+                        filteredMarkers.push(marker);
+                    }
+                }
+            }
+
+            return filteredMarkers;
+        }
+
+        function clearMarkersOnMap(markersArray) {
+            for (let i = 0; i < markersArray.length; i++) {
+                let marker = markersArray[i];
+                marker.setMap(null);
+            }
+        }
+
+        function showArea(area, bounceType) {
+
+            clearMarkersOnMap();
+
+            let filteredMarkers = getFilteredMarkers(area.places);
+
+            for (let i = 0; i < filteredMarkers.length; i++) {
+                let marker = filteredMarkers[i];
+                marker.setMap(map);
+                bounds.extend(marker.position);
+                map.fitBounds(bounds);
+                if (bounceType == 'bounce') toggleBounce(marker);
+                else if (bounceType == 'drop') dropAnimate(marker);
+            }
+        }
+
+        function getAreaIndexByName(areaName) {
+            for (let i = 0; i < areas.length; i++) {
+                let area = areas[i];
+
+                if (area.areaName == areaName) {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        function getMarkersByArea(areaName) {
+            let areaMarkers = [];
+
+            for (let i = 0; i < areas.length; i++) {
+                let area = areas[i]
+                if (area.areaName == areaName) {
+                    for (let j = 0; j < area.places.length; j++) {
+                        areaMarkers.push(getMarkerByTitle(area.places[j].title));
+                    }
+                }
+            }
+
+            return areaMarkers;
+        }
+
+        function getZomatoContent(marker) {
+
+            //FETCH res_id
+            let restaurantId = -1;
+
+            for (let i = 0; i < areas.length; i++) {
+                let area = areas[i];
                 for (let j = 0; j < area.places.length; j++) {
-                    areaMarkers.push(getMarkerByTitle(area.places[j].title));
+                    let place = area.places[j];
+
+                    if (place.title == marker.title) {
+                        restaurantId = place.restaurantId;
+                        break;
+                    }
                 }
             }
+
+            $.ajax({
+                url: "https://developers.zomato.com/api/v2.1/reviews",
+                data: {
+                    res_id : restaurantId
+                },
+                type: "GET",
+                headers: {
+                    'Accept' : 'application/json',
+                    'user-key' : '9a501ae2899cab58f5d70ed7afe99f3a'
+                },
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function(json) {
+                    console.log(json);
+
+                    let title = '<strong class="lead">' + marker.title + '</strong> <br /><br />'
+
+                    let reviews = '<ul class="review list-group">'
+                    for (var i = 0; i < json.user_reviews.length; i++) {
+                        let review = json.user_reviews[i].review.review_text.substring(0, 100) + "...";
+
+                        reviews += '<li class="list-group-item">' + review + '</li>'
+                    }
+                    reviews += '</ul>'
+
+                    let footer = '<br />Powered by <a href="https://www.zomato.com"><u>Zomato</u></a>.'
+
+                    self.currentPlaceData(title + reviews + footer);
+                },
+                failure: function(json) {
+                    self.currentPlaceData("EDJKJEDKSJDKJD")
+                }
+            })
         }
-
-        return areaMarkers;
-    }
-
-    var AppViewModel = function() {
-        let self = this;
 
         function displayMarkers(animationType) {
 
@@ -273,26 +328,10 @@ function initMap() {
 
         self.currentMarkerArray = ko.observableArray(markers);
 
-        self.currentPlaceData = function() {
-            $.ajax({
-                url: "https://developers.zomato.com/api/v2.1/restaurant",
-                data: {
-                    res_id : 13054
-                },
-                type: "GET",
-                headers: {
-                    'Accept' : 'application/json',
-                    'user-key' : '9a501ae2899cab58f5d70ed7afe99f3a'
-                },
-                dataType: 'json',
-                contentType: 'application/json',
-                success: function(json) {
-                    return json.name;
-                },
-                failure: function(json) {
-                    return json.status;
-                }
-            })
+        self.currentPlaceData = function(data) {
+            detailInfoWindow.setContent(data);
+
+            return data;
         }
 
         self.previewAreaOnly = function() {
@@ -364,6 +403,7 @@ function initMap() {
         }
 
         self.showAll = function() {
+            detailInfoWindow.close()
 
             clearMarkersOnMap(self.currentMarkerArray())
 
@@ -377,13 +417,57 @@ function initMap() {
                 let currentMarker = self.currentMarkerArray()[0];
 
                 if (short) {
-                    populateInfoWindow(currentMarker, currentMarker.title + "<br><b>Click on the title to expand</b>")
+                    if (detailInfoWindow.marker != currentMarker) detailInfoWindow.marker = currentMarker;
+
+                    detailInfoWindow.setContent('<div class="info-window">' + currentMarker.title + "<br><b>Click on the title to expand</b>" + '</div>');
+                    detailInfoWindow.open(map, currentMarker);
+                    detailInfoWindow.addListener('closeclick', function () {
+                        detailInfoWindow.setMarker = null;
+                    });
+
                 } else {
-                    populateInfoWindow(currentMarker, self.currentPlaceData())
+                    // detailInfoWindow.close();
+
+                    getZomatoContent(currentMarker);
+                    if (detailInfoWindow.marker != currentMarker) {
+                        detailInfoWindow.marker = currentMarker;
+                    }
+
+                    detailInfoWindow.setContent('<div class="info-window"><div class="loader">' + '</div></div>');
+                    detailInfoWindow.open(map, currentMarker);
+                    detailInfoWindow.addListener('closeclick', function () {
+                        detailInfoWindow.setMarker = null;
+                    });
                 }
             }
         }
 
+        $('#search-bar').keyup(function(event) {
+            let searchTerm = $('#search-bar').val();
+
+            self.showAll();
+
+            if (searchTerm == '') return;
+
+            let filteredMarkers = []
+
+            for (var i = 0; i < markers.length; i++) {
+                let marker = markers[i];
+
+                if (marker.title.includes(searchTerm)) {
+                    filteredMarkers.push(marker);
+                }
+            }
+
+            console.log(filteredMarkers);
+            clearMarkersOnMap(self.currentMarkerArray())
+            self.currentMarkerArray(filteredMarkers);
+            displayMarkers('bounce')
+        })
+
+        $('#map').click(function() {
+            detailInfoWindow.close()
+        })
     }
 
     ko.applyBindings(new AppViewModel());
