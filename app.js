@@ -131,8 +131,8 @@ function initMap() {
             bounds.extend(markers[i].position);
             map.fitBounds(bounds);
 
-            
-            markers[i].addListener('mouseover', function() {
+
+            markers[i].addListener('click', function() {
 
                 console.log(this.title);
 
@@ -299,6 +299,7 @@ function initMap() {
                     let footer = '<br />Powered by <a href="https://www.zomato.com"><u>Zomato</u></a>.'
 
                     self.currentPlaceData(title + reviews + footer);
+                    return self.currentPlaceData();
                 },
                 failure: function(json) {
                     self.currentPlaceData("EDJKJEDKSJDKJD")
@@ -418,7 +419,6 @@ function initMap() {
 
                 if (short) {
                     if (detailInfoWindow.marker != currentMarker) detailInfoWindow.marker = currentMarker;
-
                     detailInfoWindow.setContent('<div class="info-window">' + currentMarker.title + "<br><b>Click on the title to expand</b>" + '</div>');
                     detailInfoWindow.open(map, currentMarker);
                     detailInfoWindow.addListener('closeclick', function () {
