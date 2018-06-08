@@ -26,15 +26,16 @@
                     <a
                     data-toggle="collapse" aria-expanded="false"
                     data-bind=" text: areaName,
-                                attr: { href: '#' + areaName },
-                                event: { mouseover: $parent.previewAreaOnly },
-                                click: $parent.showAreaOnly"></a>
+                    attr: { href: '#' + areaName },
+                    event: { mouseover: $parent.previewAreaOnly },
+                    click: $parent.showAreaOnly"></a>
                     <ul class="collapse list-unstyled" data-bind="foreach: places, attr: {id: areaName}">
-                        <li><a
+                        <li>
+                            <a
                             href="#"
                             data-bind=" text: title,
-                                        event: { mouseover: $root.previewPlaceOnly },
-                                        click: $root.showPlaceOnly"></a>
+                            event: { mouseover: $root.previewPlaceOnly },
+                            click: $root.showPlaceOnly"></a>
                         </li>
                     </ul>
                 </li>

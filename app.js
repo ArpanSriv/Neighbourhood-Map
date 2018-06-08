@@ -7,6 +7,7 @@ $(document).ready(function () {
 let map;
 let markers = [];
 let detailInfoWindow;
+let bounds;
 
 let areas = [
     {
@@ -111,7 +112,7 @@ function initMap() {
         });
 
         detailInfoWindow = new google.maps.InfoWindow();
-        let bounds = new google.maps.LatLngBounds();
+        bounds = new google.maps.LatLngBounds();
 
         for (let j = 0; j < areas.length; j++) {
             let area = areas[j];
@@ -132,7 +133,7 @@ function initMap() {
             map.fitBounds(bounds);
 
 
-            markers[i].addListener('click', function() {
+            markers[i].addListener('mouseover', function() {
 
                 console.log(this.title);
 
@@ -151,6 +152,7 @@ function initMap() {
                 console.log(place);
 
                 self.displayInfoWindow(false);
+
             })
         }
 
@@ -299,10 +301,12 @@ function initMap() {
                     let footer = '<br />Powered by <a href="https://www.zomato.com"><u>Zomato</u></a>.'
 
                     self.currentPlaceData(title + reviews + footer);
-                    return self.currentPlaceData();
                 },
                 failure: function(json) {
-                    self.currentPlaceData("EDJKJEDKSJDKJD")
+
+                    console.log(json);
+
+                    self.currentPlaceData("Some Error Occured. Please Try Again.")
                 }
             })
         }
@@ -319,6 +323,10 @@ function initMap() {
                 if (animationType == 'bounce') toggleBounce(marker);
                 else if (animationType == 'drop') dropAnimate(marker);
             }
+        }
+
+        function fillInfoWindow(infoWindow, content) {
+            infoWindow.setContent(content);
         }
 
         self.displayAreas = ko.observableArray(areas);
@@ -442,6 +450,7 @@ function initMap() {
             }
         }
 
+        //jQuery listener on Search Bar.
         $('#search-bar').keyup(function(event) {
             let searchTerm = $('#search-bar').val();
 
@@ -465,6 +474,7 @@ function initMap() {
             displayMarkers('bounce')
         })
 
+        //Listener for map clicks to close InfoWindow
         $('#map').click(function() {
             detailInfoWindow.close()
         })
