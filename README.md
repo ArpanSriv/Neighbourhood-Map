@@ -9,11 +9,11 @@ This project is a single page application which displays different areas and the
 
 The following libraries have been used to produce this application:
 
-- [jQuery](www.jQuery.com)
-- [KnockoutJS](www.knockoutjs.com)
+- [jQuery](https://jquery.com/)
+- [KnockoutJS](http://knockoutjs.com/)
 - [Google Maps API](https://developers.google.com/maps/documentation/javascript/tutorial)
-- [Bootstrap](www.bootstrap.com)
-- [Zomato API](www.api.zomato.com)
+- [Bootstrap](https://getbootstrap.com/)
+- [Zomato API](https://developers.zomato.com/api)
 
 ## Usage Instructions
 - Method 1
