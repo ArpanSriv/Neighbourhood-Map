@@ -134,21 +134,22 @@ a.reset {
     cursor: pointer;
     text-align: center;
 }
-/* a.download {
-background: #fff;
-color: #7386D5;
-}
 
-a.reset, a.reset:hover {
-background: #6d7fcc !important;
-color: #fff !important;
-} */
+.navbar-right {
+    width: 50%;
+    padding: 6px;
+}
 
 #map {
     position: relative;
     box-sizing: border-box;
     height: 90vh;
     width: 100%;
+}
+
+.res-image {
+    padding: 6px;
+    width: 80%;
 }
 
 .loader {
@@ -194,5 +195,12 @@ MEDIA QUERIES
 
     #sidebarCollapse span {
         display: none;
+    }
+
+    .navbar-right {
+        float: right!important;
+        /* margin-right: -15px; */
+        width: 100%;
+        padding: 0;
     }
 }

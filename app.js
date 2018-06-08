@@ -111,7 +111,11 @@ function initMap() {
             }
         });
 
-        detailInfoWindow = new google.maps.InfoWindow();
+        detailInfoWindow = new google.maps.InfoWindow({
+            content: "",
+            maxWidth: 300
+        });
+
         bounds = new google.maps.LatLngBounds();
 
         for (let j = 0; j < areas.length; j++) {
@@ -132,18 +136,19 @@ function initMap() {
             bounds.extend(markers[i].position);
             map.fitBounds(bounds);
 
-
-            markers[i].addListener('mouseover', function() {
+            google.maps.event.addListener(markers[i], 'mouseover', function() {
 
                 console.log(this.title);
 
-                clearMarkersOnMap(self.currentMarkerArray());
+                // clearMarkersOnMap(self.currentMarkerArray());
 
-                self.currentMarkerArray([this])
+                toggleBounce(this);
 
-                this.setMap(map);
+                self.currentMarkerArray([this]);
 
-                map.panTo(this.position)
+                // this.setMap(map);
+
+                // map.panTo(this.position)
 
                 let place = getPlaceByMarker(this);
 
@@ -286,21 +291,41 @@ function initMap() {
                 dataType: 'json',
                 contentType: 'application/json',
                 success: function(json) {
-                    console.log(json);
 
-                    let title = '<strong class="lead">' + marker.title + '</strong> <br /><br />'
+                    $.ajax({
+                        url: "https://developers.zomato.com/api/v2.1/restaurant",
+                        data: {
+                            res_id : restaurantId
+                        },
+                        type: "GET",
+                        headers: {
+                            'Accept' : 'application/json',
+                            'user-key' : '9a501ae2899cab58f5d70ed7afe99f3a'
+                        },
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        success: function(restaurantJSON) {
+                            console.log(json);
 
-                    let reviews = '<ul class="review list-group">'
-                    for (var i = 0; i < json.user_reviews.length; i++) {
-                        let review = json.user_reviews[i].review.review_text.substring(0, 100) + "...";
+                            let title = '<strong class="lead">' + marker.title + '</strong> <br /><br />'
 
-                        reviews += '<li class="list-group-item">' + review + '</li>'
-                    }
-                    reviews += '</ul>'
+                            let restaurantImg = '<center><img class="res-image" src="' + restaurantJSON.featured_image + '"></center>'
 
-                    let footer = '<br />Powered by <a href="https://www.zomato.com"><u>Zomato</u></a>.'
+                            let reviews = '<ul class="review list-group">'
+                            for (var i = 0; i < 3; i++) {
+                                let review = json.user_reviews[i].review.review_text.substring(0, 75) + "...";
 
-                    self.currentPlaceData(title + reviews + footer);
+                                reviews += '<li class="list-group-item">' + review + '</li>'
+                            }
+                            reviews += '</ul>'
+
+                            let restaurantLink = '<br />Visit <u><a href="' + restaurantJSON.url + '">' + restaurantJSON.name + '</a></u> on <a href="https://www.zomato.com">Zomato</a>'
+
+                            let footer = '<br />Powered by <a href="https://www.zomato.com"><u>Zomato</u></a>.'
+
+                            self.currentPlaceData(title + restaurantImg + reviews + restaurantLink + footer);
+                        }
+                    })
                 },
                 failure: function(json) {
 
@@ -399,9 +424,11 @@ function initMap() {
             clearMarkersOnMap(self.currentMarkerArray());
 
             let marker = getMarkerByTitle(this.title);
+
             marker.addListener('click', function() {
                 self.displayInfoWindow(false);
             })
+
             self.currentMarkerArray([marker])
 
             displayMarkers('drop');
@@ -477,7 +504,8 @@ function initMap() {
         //Listener for map clicks to close InfoWindow
         $('#map').click(function() {
             detailInfoWindow.close()
-        })
+        });
+
     }
 
     ko.applyBindings(new AppViewModel());
