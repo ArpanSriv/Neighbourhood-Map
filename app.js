@@ -309,7 +309,7 @@ function initMap() {
 
                             let title = '<strong class="lead">' + marker.title + '</strong> <br /><br />'
 
-                            let restaurantImg = '<center><img class="res-image" src="' + restaurantJSON.featured_image + '"></center>'
+                            let restaurantImg = '<center><img class="res-image img-rounded" src="' + restaurantJSON.featured_image + '"></center>'
 
                             let reviews = '<ul class="review list-group">'
                             for (var i = 0; i < 3; i++) {
@@ -362,6 +362,8 @@ function initMap() {
 
         self.currentMarkerArray = ko.observableArray(markers);
 
+        self.infoWindowCloseSetting =  ko.observable(true);
+
         self.currentPlaceData = function(data) {
             detailInfoWindow.setContent(data);
 
@@ -370,6 +372,8 @@ function initMap() {
 
         self.previewAreaOnly = function() {
             console.log(this.areaName);
+
+            detailInfoWindow.close();
 
             clearMarkersOnMap(self.currentMarkerArray());
 
@@ -503,10 +507,14 @@ function initMap() {
 
         //Listener for map clicks to close InfoWindow
         $('#map').click(function() {
-            detailInfoWindow.close()
+            if (self.infoWindowCloseSetting()) detailInfoWindow.close()
         });
 
     }
 
     ko.applyBindings(new AppViewModel());
+}
+
+function mapError() {
+    alert('There was an error while loading Google Maps. Please try again later.')
 }

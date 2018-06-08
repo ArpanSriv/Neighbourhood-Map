@@ -7,10 +7,13 @@
 
     <title>Neighbourhood Map</title>
 
+    <!-- Fav Icon -->
+    <link rel="shortcut icon" href="favicon.png">
     <!-- Bootstrap CSS CDN -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <!-- Our Custom CSS -->
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
 
@@ -19,6 +22,7 @@
         <nav id="sidebar">
             <div class="sidebar-header">
                 <h3>Neighbourhood Map</h3>
+
             </div>
 
             <ul class="list-unstyled components" data-bind="foreach: areas">
@@ -43,7 +47,29 @@
 
             <ul class="list-unstyled">
                 <li><a class="reset" data-bind="click: showAll">Reset</a></li>
+                <li style="padding: 10px; margin-top: 150px">
+                    <div style="width: 80%; display: inline-block">
+                        Info Window close on clicking outside.
+                    </div>
+                    <div class="custom-check" id="info-window-setting">
+                        <!-- Modern Check box by sureshrkm https://codepen.io/sureshrkm/pen/rLoZjP -->
+                        <input id="q3" name="h" type="checkbox"
+                        data-bind="checked: $root.infoWindowCloseSetting"/>
+                        <label for="q3"></label>
+
+                    </div>
+                </li>
             </ul>
+
+            <footer>
+                <div class="footer-sidebar">
+                    <p>
+                        <center>Made with &hearts; by <br /><a href="https://github.com/ArpanSriv/"> <i>Arpan Srivastava</i> </a> </center>
+                        <br />
+                        <center>View the <a href="https://github.com/ArpanSriv/Neighbourhood-Map"> <u>source code</u> </a> <br> on <a href="https:///www.github.com">GitHub</a>.</center>
+                    </p>
+                </div>
+            </footer>
 
         </nav>
 
@@ -59,9 +85,6 @@
                             <span>Toggle Places</span>
                         </button>
 
-                        <!-- <div class="navbar-collapse" id="bs-example-navbar-collapse-1"> -->
-
-                        <!-- </div> -->
                     </div>
 
                     <div class="navbar-right input-group">
@@ -88,10 +111,10 @@
     <script src="knockout-3.4.2.js"></script>
     <!-- Google Maps API -->
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCI__INwsLd3pnM2Qm9Tp6nIkwkxotwsis&callback=initMap"></script>
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCI__INwsLd3pnM2Qm9Tp6nIkwkxotwsis&callback=initMap" onerror="mapError()"></script>
     <!-- Bootstrap Js CDN -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
+    <!-- Custom JS -->
     <script type="text/javascript" src="app.js"></script>
     <!-- 9a501ae2899cab58f5d70ed7afe99f3a -->
 </body>
