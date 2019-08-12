@@ -20,7 +20,7 @@ The following libraries have been used to produce this application:
     1. Clone the repository.
     2. Run [index.html](/index.html)
 - Method 2.
-    * Click [here](https://arpansriv.github.io/Neighbourhood-Map/) to view the live version.
+    * Click [here](https://arpansriv.github.io/nm/) to view the live version.
 
 The sidebar shows a list of the areas grouping different places. Hover on the area to preview the areas and hover on the places to preview the places. Click on the place to view more information from Zomato.
 
